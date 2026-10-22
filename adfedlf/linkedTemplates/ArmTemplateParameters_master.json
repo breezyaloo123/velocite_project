@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adfedlf"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
+		"LS_ADLS_accountKey": {
+			"value": ""
+		},
+		"LS_SQL_password": {
+			"value": ""
+		},
+		"HttpImages_properties_typeProperties_url": {
+			"value": "https://cdn.dummyjson.com/"
+		},
+		"LS_ADLS_properties_typeProperties_url": {
+			"value": "https://edlfstorage.dfs.core.windows.net/"
+		},
+		"LS_SQL_properties_typeProperties_server": {
+			"value": "edlf.database.windows.net"
+		},
+		"LS_SQL_properties_typeProperties_database": {
+			"value": "tpedlf"
+		},
+		"LS_SQL_properties_typeProperties_userName": {
+			"value": "edlf_user"
+		},
+		"RestService1_properties_typeProperties_url": {
+			"value": "https://jsonplaceholder.typicode.com/users"
+		},
+		"RestService2_properties_typeProperties_url": {
+			"value": "https://dummyjson.com/"
+		},
+		"images_link_properties_typeProperties_url": {
+			"value": "https://cdn.dummyjson.com/"
+		},
+		"update_6h_30_properties_PL_project_edlf_parameters_trigger": {
+			"value": "2026-10-22T00:00:00Z"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
