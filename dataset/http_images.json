@@ -1,0 +1,26 @@
+{
+	"name": "http_images",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "HttpImages",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"image_url": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "@dataset().image_url",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

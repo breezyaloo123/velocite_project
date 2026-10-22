@@ -1,0 +1,35 @@
+{
+	"name": "externalCRM",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ExternalID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ExternalName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ExternalEmail",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ExternalCompany",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "stg",
+			"table": "externalCRM"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

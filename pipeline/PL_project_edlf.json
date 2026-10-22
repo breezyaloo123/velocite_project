@@ -1,0 +1,321 @@
+{
+	"name": "PL_project_edlf",
+	"properties": {
+		"activities": [
+			{
+				"name": "abonnes_raw_data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "old_watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "new_watermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT *\nFROM dbo.abonnes\nWHERE modifie_le > '@{activity('old_watermark').output.firstRow.OldWatermark}'\n  AND modifie_le <= '@{activity('new_watermark').output.firstRow.NewWatermark}';",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "dbo_abonnes",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "raw_abonnee",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "stations_raw_data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "abonnes_raw_data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "dbo_stations",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "raw_stations",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "locations_raw_data",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "old_watermark_copy1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "new_watermark_copy1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat(\n  'SELECT * FROM dbo.locations WHERE modifie_le >= DATEADD(day, -7, ''',\n  formatDateTime(pipeline().parameters.trigger, 'yyyy-MM-dd HH:mm:ss'),\n  ''') AND modifie_le < ''',\n  formatDateTime(pipeline().parameters.trigger, 'yyyy-MM-dd HH:mm:ss'),\n  ''''\n)",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "dbo_locations",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "raw_locations",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "old_watermark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT valeur_watermark AS OldWatermark\nFROM dbo.watermark_log\nWHERE nom_table = 'dbo.abonnes';",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dbo_watermark_log",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "new_watermark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT COALESCE(MAX(modifie_le), '1900-01-01') AS NewWatermark\nFROM dbo.abonnes;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dbo_abonnes",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "old_watermark_copy1",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "stations_raw_data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT valeur_watermark AS OldWatermark\nFROM dbo.watermark_log\nWHERE nom_table = 'dbo.locations';",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dbo_watermark_log",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "new_watermark_copy1",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "stations_raw_data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT COALESCE(MAX(modifie_le), '1900-01-01') AS NewWatermark\nFROM dbo.locations;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dbo_abonnes",
+						"type": "DatasetReference"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"trigger": {
+				"type": "string",
+				"defaultValue": "2026-10-22T00:00:00Z"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-10-22T18:13:06Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

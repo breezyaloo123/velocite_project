@@ -1,0 +1,27 @@
+{
+	"name": "dbo_watermark_log",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "nom_table",
+				"type": "varchar"
+			},
+			{
+				"name": "valeur_watermark",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "watermark_log"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

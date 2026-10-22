@@ -1,0 +1,42 @@
+{
+	"name": "update_6h_30",
+	"properties": {
+		"description": "rendre disponible les données de jour-1 avant 7h pour la visualisation du dashboard pour les métiers",
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "ETL_PL",
+					"type": "PipelineReference"
+				}
+			},
+			{
+				"pipelineReference": {
+					"referenceName": "PL_project_edlf",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"trigger": "2026-10-22T00:00:00Z"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2026-10-22T21:59:00",
+				"timeZone": "Romance Standard Time",
+				"schedule": {
+					"minutes": [
+						30
+					],
+					"hours": [
+						6
+					]
+				}
+			}
+		}
+	}
+}

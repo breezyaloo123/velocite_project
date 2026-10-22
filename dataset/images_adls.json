@@ -1,0 +1,20 @@
+{
+	"name": "images_adls",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "P0001.webp",
+				"folderPath": "raw/catalog/product_images/",
+				"fileSystem": "retail360"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

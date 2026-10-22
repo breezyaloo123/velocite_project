@@ -1,0 +1,34 @@
+{
+	"name": "curated_locations",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "curated/locations",
+				"fileSystem": "projetedlf"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "station_id",
+				"type": "INT32"
+			},
+			{
+				"name": "nom",
+				"type": "UTF8"
+			},
+			{
+				"name": "capacite",
+				"type": "INT32"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

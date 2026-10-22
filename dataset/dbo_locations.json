@@ -1,0 +1,59 @@
+{
+	"name": "dbo_locations",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SQL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "location_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "abonne_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "station_depart",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "station_arrivee",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "debut",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "fin",
+				"type": "datetime2",
+				"scale": 7
+			},
+			{
+				"name": "montant",
+				"type": "decimal",
+				"precision": 6,
+				"scale": 2
+			},
+			{
+				"name": "modifie_le",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "locations"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,46 @@
+{
+	"name": "locations_quanrantaine",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Quanrantaine/locations",
+				"fileSystem": "projetedlf"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "abonne_id",
+				"type": "INT32"
+			},
+			{
+				"name": "nom",
+				"type": "UTF8"
+			},
+			{
+				"name": "email",
+				"type": "UTF8"
+			},
+			{
+				"name": "ville",
+				"type": "UTF8"
+			},
+			{
+				"name": "modifie_le",
+				"type": "INT96"
+			},
+			{
+				"name": "date_rejet",
+				"type": "DATE"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
