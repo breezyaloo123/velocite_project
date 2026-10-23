@@ -10,8 +10,8 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "curated_locations.parquet",
-				"folderPath": "curated/locations",
+				"fileName": "part-00199-93bd8b97-cdf6-4b91-81f0-6ae6f3aa161a-c000.snappy.parquet",
+				"folderPath": "Quanrantaine/locations",
 				"fileSystem": "projetedlf"
 			},
 			"compressionCodec": "snappy"
