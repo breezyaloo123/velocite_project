@@ -71,17 +71,17 @@
 				},
 				{
 					"dataset": {
-						"referenceName": "locations_quanrantaine",
-						"type": "DatasetReference"
-					},
-					"name": "sink6"
-				},
-				{
-					"dataset": {
 						"referenceName": "data_consumption",
 						"type": "DatasetReference"
 					},
 					"name": "sink7"
+				},
+				{
+					"dataset": {
+						"referenceName": "locations_quanrantaine",
+						"type": "DatasetReference"
+					},
+					"name": "sink8"
 				}
 			],
 			"transformations": [
@@ -225,7 +225,15 @@
 				"!isNull(modifie_le) &&\r",
 				"(!isNull(fin) && fin >= debut) &&\r",
 				"(!isNull(montant) && montant >= 0),",
-				"     disjoint: true) ~> split3@(LocationsDonneesValides, LocationsDonneesInvalides)",
+				"     !isNull(location_id) &&\r",
+				"isNull(abonne_id) ||\r",
+				"isNull(station_depart) ||\r",
+				"isNull(station_arrivee) ||\r",
+				"isNull(debut) ||\r",
+				"isNull(modifie_le) ||\r",
+				"(isNull(fin) || fin <= debut) ||\r",
+				"(isNull(montant) || montant == 0),",
+				"     disjoint: true) ~> split3@(LocationsDonneesValides, LocationsDonneesInValides)",
 				"source1 derive(duree_minutes = toInteger(round((toLong(fin) - toLong(debut)) / 60000)),",
 				"          date_jour = toDate(debut)) ~> derivedColumn5",
 				"derivedColumn5 aggregate(groupBy(date_jour,",
@@ -302,22 +310,6 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     partitionBy('hash', 1)) ~> sink5",
-				"split3@LocationsDonneesInvalides sink(allowSchemaDrift: true,",
-				"     validateSchema: false,",
-				"     input(",
-				"          abonne_id as integer,",
-				"          nom as string,",
-				"          email as string,",
-				"          ville as string,",
-				"          modifie_le as timestamp,",
-				"          date_rejet as date",
-				"     ),",
-				"     format: 'parquet',",
-				"     umask: 0022,",
-				"     preCommands: [],",
-				"     postCommands: [],",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink6",
 				"aggregate1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -335,7 +327,23 @@
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     partitionBy('hash', 1)) ~> sink7"
+				"     partitionBy('hash', 1)) ~> sink7",
+				"split3@LocationsDonneesInValides sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          abonne_id as integer,",
+				"          nom as string,",
+				"          email as string,",
+				"          ville as string,",
+				"          modifie_le as timestamp,",
+				"          date_rejet as date",
+				"     ),",
+				"     format: 'parquet',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink8"
 			]
 		}
 	}

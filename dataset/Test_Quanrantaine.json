@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "part-00199-93bd8b97-cdf6-4b91-81f0-6ae6f3aa161a-c000.snappy.parquet",
+				"fileName": "part-00199-f4ad6ab2-a39b-4b52-8427-03aa6e74719f-c000.snappy.parquet",
 				"folderPath": "Quanrantaine/locations",
 				"fileSystem": "projetedlf"
 			},
