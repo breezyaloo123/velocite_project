@@ -161,8 +161,8 @@
 									"sink3": {},
 									"sink4": {},
 									"sink5": {},
-									"sink6": {},
-									"sink7": {}
+									"sink7": {},
+									"sink8": {}
 								}
 							},
 							"staging": {},
@@ -2045,7 +2045,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "part-00199-93bd8b97-cdf6-4b91-81f0-6ae6f3aa161a-c000.snappy.parquet",
+						"fileName": "part-00199-f4ad6ab2-a39b-4b52-8427-03aa6e74719f-c000.snappy.parquet",
 						"folderPath": "Quanrantaine/locations",
 						"fileSystem": "projetedlf"
 					},
@@ -3387,17 +3387,17 @@
 						},
 						{
 							"dataset": {
-								"referenceName": "locations_quanrantaine",
-								"type": "DatasetReference"
-							},
-							"name": "sink6"
-						},
-						{
-							"dataset": {
 								"referenceName": "data_consumption",
 								"type": "DatasetReference"
 							},
 							"name": "sink7"
+						},
+						{
+							"dataset": {
+								"referenceName": "locations_quanrantaine",
+								"type": "DatasetReference"
+							},
+							"name": "sink8"
 						}
 					],
 					"transformations": [
@@ -3541,7 +3541,15 @@
 						"!isNull(modifie_le) &&\r",
 						"(!isNull(fin) && fin >= debut) &&\r",
 						"(!isNull(montant) && montant >= 0),",
-						"     disjoint: true) ~> split3@(LocationsDonneesValides, LocationsDonneesInvalides)",
+						"     !isNull(location_id) &&\r",
+						"isNull(abonne_id) ||\r",
+						"isNull(station_depart) ||\r",
+						"isNull(station_arrivee) ||\r",
+						"isNull(debut) ||\r",
+						"isNull(modifie_le) ||\r",
+						"(isNull(fin) || fin <= debut) ||\r",
+						"(isNull(montant) || montant == 0),",
+						"     disjoint: true) ~> split3@(LocationsDonneesValides, LocationsDonneesInValides)",
 						"source1 derive(duree_minutes = toInteger(round((toLong(fin) - toLong(debut)) / 60000)),",
 						"          date_jour = toDate(debut)) ~> derivedColumn5",
 						"derivedColumn5 aggregate(groupBy(date_jour,",
@@ -3618,22 +3626,6 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> sink5",
-						"split3@LocationsDonneesInvalides sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          abonne_id as integer,",
-						"          nom as string,",
-						"          email as string,",
-						"          ville as string,",
-						"          modifie_le as timestamp,",
-						"          date_rejet as date",
-						"     ),",
-						"     format: 'parquet',",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sink6",
 						"aggregate1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -3651,7 +3643,23 @@
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink7"
+						"     partitionBy('hash', 1)) ~> sink7",
+						"split3@LocationsDonneesInValides sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          abonne_id as integer,",
+						"          nom as string,",
+						"          email as string,",
+						"          ville as string,",
+						"          modifie_le as timestamp,",
+						"          date_rejet as date",
+						"     ),",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink8"
 					]
 				}
 			},
@@ -3664,8 +3672,8 @@
 				"[concat(variables('factoryId'), '/datasets/curated_abonnee')]",
 				"[concat(variables('factoryId'), '/datasets/stations_quanrantaine')]",
 				"[concat(variables('factoryId'), '/datasets/curated_stations')]",
-				"[concat(variables('factoryId'), '/datasets/locations_quanrantaine')]",
-				"[concat(variables('factoryId'), '/datasets/data_consumption')]"
+				"[concat(variables('factoryId'), '/datasets/data_consumption')]",
+				"[concat(variables('factoryId'), '/datasets/locations_quanrantaine')]"
 			]
 		},
 		{
