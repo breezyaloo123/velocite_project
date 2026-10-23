@@ -333,8 +333,9 @@
 				}
 			},
 			{
-				"name": "Update watermark modified date",
-				"type": "Lookup",
+				"name": "update watermark modified date",
+				"description": "Modifier la date du watermark pour qu'il ne prenne pas les mêmes données à chaque exécution.",
+				"type": "Script",
 				"dependsOn": [
 					{
 						"activity": "abonnes_raw_data",
@@ -351,17 +352,21 @@
 					"secureInput": false
 				},
 				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "LS_SQL",
+					"type": "LinkedServiceReference"
+				},
 				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": "with update_watermark as (SELECT MAX(modifie_le) AS derniere_date\nFROM dbo.abonnes)\nupdate dbo.watermark_log set valeur_watermark = derniere_date where nom_table = 'dbo.abonnes';",
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "dbo_watermark_log",
-						"type": "DatasetReference"
-					}
+					"scripts": [
+						{
+							"type": "Query",
+							"text": {
+								"value": "UPDATE dbo.watermark_log \nSET valeur_watermark = '@{activity('new_watermark').output.firstRow.NewWatermark}' \nWHERE nom_table = 'dbo.abonnes';",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],
