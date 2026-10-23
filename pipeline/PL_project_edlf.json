@@ -308,7 +308,7 @@
 				}
 			},
 			{
-				"name": "update watermark modified date",
+				"name": "update watermark modified date abonnee",
 				"description": "Modifier la date du watermark pour qu'il ne prenne pas les mêmes données à chaque exécution.",
 				"type": "Script",
 				"dependsOn": [
@@ -345,7 +345,7 @@
 				}
 			},
 			{
-				"name": "update watermark modified date_copy1",
+				"name": "update watermark modified date locations",
 				"description": "Modifier la date du watermark pour qu'il ne prenne pas les mêmes données à chaque exécution.",
 				"type": "Script",
 				"dependsOn": [
