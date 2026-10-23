@@ -579,6 +579,7 @@
 							},
 							"sink": {
 								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE stg.Customer;",
 								"writeBehavior": "upsert",
 								"upsertSettings": {
 									"useTempDB": true,
@@ -702,8 +703,10 @@
 							},
 							"sink": {
 								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE stg.Product;",
 								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
 							},
 							"enableStaging": false,
 							"translator": {
@@ -822,8 +825,10 @@
 							},
 							"sink": {
 								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE stg.SalesOrder;",
 								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
 							},
 							"enableStaging": false,
 							"translator": {
@@ -938,8 +943,10 @@
 							},
 							"sink": {
 								"type": "AzureSqlSink",
+								"preCopyScript": "TRUNCATE TABLE stg.SalesOrderLine;",
 								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
+								"sqlWriterUseTableLock": false,
+								"disableMetricsCollection": false
 							},
 							"enableStaging": false,
 							"translator": {
