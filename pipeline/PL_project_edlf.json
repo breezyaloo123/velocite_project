@@ -331,6 +331,38 @@
 						"type": "DatasetReference"
 					}
 				}
+			},
+			{
+				"name": "Update watermark modified date",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "abonnes_raw_data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "with update_watermark as (SELECT MAX(modifie_le) AS derniere_date\nFROM dbo.abonnes)\nupdate dbo.watermark_log set valeur_watermark = derniere_date where nom_table = 'dbo.abonnes';",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dbo_watermark_log",
+						"type": "DatasetReference"
+					}
+				}
 			}
 		],
 		"parameters": {
