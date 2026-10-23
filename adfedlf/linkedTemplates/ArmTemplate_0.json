@@ -459,8 +459,8 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "part-00000-ef444ba2-24ae-4c54-972d-35e8641663d2-c000.snappy.parquet",
-						"folderPath": "Quanrantaine/abonnes",
+						"fileName": "curated_locations.parquet",
+						"folderPath": "curated/locations",
 						"fileSystem": "projetedlf"
 					},
 					"compressionCodec": "snappy"
