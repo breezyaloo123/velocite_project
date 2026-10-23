@@ -17,6 +17,30 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/raw_locations')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "locations",
+						"folderPath": "raw",
+						"fileSystem": "projetedlf"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/raw_stations')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1759,6 +1783,69 @@
 								"parameters": {}
 							}
 						}
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT MAX(modifie_le) AS derniere_date\nFROM dbo.abonnes;",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "dbo_abonnes",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						}
+					},
+					{
+						"name": "update watermark modified date",
+						"description": "Modifier la date du watermark pour qu'il ne prenne pas les mêmes données à chaque exécution.",
+						"type": "Script",
+						"dependsOn": [
+							{
+								"activity": "abonnes_raw_data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"linkedServiceName": {
+							"referenceName": "LS_SQL",
+							"type": "LinkedServiceReference"
+						},
+						"typeProperties": {
+							"scripts": [
+								{
+									"type": "Query",
+									"text": {
+										"value": "UPDATE dbo.watermark_log \nSET valeur_watermark = '@{activity('new_watermark').output.firstRow.NewWatermark}' \nWHERE nom_table = 'dbo.abonnes';",
+										"type": "Expression"
+									}
+								}
+							],
+							"scriptBlockExecutionTimeout": "02:00:00"
+						}
 					}
 				],
 				"policy": {
@@ -1774,7 +1861,8 @@
 				"lastPublishTime": "2026-10-22T18:13:06Z"
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/raw_stations')]"
+				"[concat(variables('factoryId'), '/datasets/raw_stations')]",
+				"[concat(variables('factoryId'), '/datasets/raw_locations')]"
 			]
 		},
 		{
@@ -2097,6 +2185,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/raw_stations')]",
+				"[concat(variables('factoryId'), '/datasets/raw_locations')]",
 				"[concat(variables('factoryId'), '/datasets/stations_quanrantaine')]"
 			]
 		},
