@@ -308,31 +308,6 @@
 				}
 			},
 			{
-				"name": "Lookup1",
-				"type": "Lookup",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT MAX(modifie_le) AS derniere_date\nFROM dbo.abonnes;",
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "dbo_abonnes",
-						"type": "DatasetReference"
-					}
-				}
-			},
-			{
 				"name": "update watermark modified date",
 				"description": "Modifier la date du watermark pour qu'il ne prenne pas les mêmes données à chaque exécution.",
 				"type": "Script",
@@ -362,6 +337,43 @@
 							"type": "Query",
 							"text": {
 								"value": "UPDATE dbo.watermark_log \nSET valeur_watermark = '@{activity('new_watermark').output.firstRow.NewWatermark}' \nWHERE nom_table = 'dbo.abonnes';",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "update watermark modified date_copy1",
+				"description": "Modifier la date du watermark pour qu'il ne prenne pas les mêmes données à chaque exécution.",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "locations_raw_data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "LS_SQL",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": {
+								"value": "UPDATE dbo.watermark_log \nSET valeur_watermark = '@{activity('new_watermark_copy1').output.firstRow.NewWatermark}' \nWHERE nom_table = 'dbo.locations';",
 								"type": "Expression"
 							}
 						}
