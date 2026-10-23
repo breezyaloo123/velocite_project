@@ -2045,8 +2045,8 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "curated_locations.parquet",
-						"folderPath": "curated/locations",
+						"fileName": "part-00199-93bd8b97-cdf6-4b91-81f0-6ae6f3aa161a-c000.snappy.parquet",
+						"folderPath": "Quanrantaine/locations",
 						"fileSystem": "projetedlf"
 					},
 					"compressionCodec": "snappy"
@@ -3538,9 +3538,9 @@
 						"!isNull(station_depart) &&\r",
 						"!isNull(station_arrivee) &&\r",
 						"!isNull(debut) &&\r",
-						"isNull(modifie_le) &&\r",
-						"(isNull(fin) || fin >= debut) &&\r",
-						"(isNull(montant) || montant >= 0),",
+						"!isNull(modifie_le) &&\r",
+						"(!isNull(fin) && fin >= debut) &&\r",
+						"(!isNull(montant) && montant >= 0),",
 						"     disjoint: true) ~> split3@(LocationsDonneesValides, LocationsDonneesInvalides)",
 						"source1 derive(duree_minutes = toInteger(round((toLong(fin) - toLong(debut)) / 60000)),",
 						"          date_jour = toDate(debut)) ~> derivedColumn5",
