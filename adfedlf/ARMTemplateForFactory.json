@@ -19,6 +19,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_SQL'"
 		},
+		"AzureKeyVault1_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://usersaccess.vault.azure.net/"
+		},
 		"HttpImages_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://cdn.dummyjson.com/"
@@ -3148,6 +3152,19 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureKeyVault1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzureKeyVault1_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/HttpImages')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -3422,6 +3439,15 @@
 						},
 						{
 							"name": "aggregate1"
+						},
+						{
+							"name": "window2"
+						},
+						{
+							"name": "filter2"
+						},
+						{
+							"name": "select3"
 						}
 					],
 					"scriptLines": [
@@ -3507,14 +3533,14 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select2",
 						"RawLocations derive(montant = toDouble(montant)) ~> derivedColumn4",
-						"derivedColumn4 split(!isNull(location_id) &&\r",
+						"select3 split(!isNull(location_id) &&\r",
 						"!isNull(abonne_id) &&\r",
 						"!isNull(station_depart) &&\r",
 						"!isNull(station_arrivee) &&\r",
 						"!isNull(debut) &&\r",
-						"!isNull(fin) &&\r",
-						"!isNull(montant) &&\r",
-						"!isNull(modifie_le),",
+						"isNull(modifie_le) &&\r",
+						"(isNull(fin) || fin >= debut) &&\r",
+						"(isNull(montant) || montant >= 0),",
 						"     disjoint: false) ~> split3@(LocationsDonneesValides, LocationsDonneesInvalides)",
 						"source1 derive(duree_minutes = toInteger(round((toLong(fin) - toLong(debut)) / 60000)),",
 						"          date_jour = toDate(debut)) ~> derivedColumn5",
@@ -3525,6 +3551,22 @@
 						"          duree_total_trajets = sum(duree_minutes),",
 						"          duree_total_moyennes = round(avg(duree_minutes), 2),",
 						"          montant_total = sum(montant)) ~> aggregate1",
+						"derivedColumn4 window(over(location_id),",
+						"     desc(modifie_le, true),",
+						"     row_num = rowNumber()) ~> window2",
+						"window2 filter(row_num == 1) ~> filter2",
+						"filter2 select(mapColumn(",
+						"          location_id,",
+						"          abonne_id,",
+						"          station_depart,",
+						"          station_arrivee,",
+						"          debut,",
+						"          fin,",
+						"          montant,",
+						"          modifie_le",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select3",
 						"derivedColumn2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'parquet',",
@@ -3624,6 +3666,29 @@
 				"[concat(variables('factoryId'), '/datasets/curated_stations')]",
 				"[concat(variables('factoryId'), '/datasets/locations_quanrantaine')]",
 				"[concat(variables('factoryId'), '/datasets/data_consumption')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/credential1')]",
+			"type": "Microsoft.DataFactory/factories/credentials",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "ServicePrincipal",
+				"typeProperties": {
+					"tenant": "413600cf-bd4e-4c7c-8a61-69e73cddf731",
+					"servicePrincipalId": "dev_pip",
+					"servicePrincipalKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVault1",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "dev_pip"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault1')]"
 			]
 		}
 	]

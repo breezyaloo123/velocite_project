@@ -17,6 +17,30 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/raw_abonnee')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_ADLS",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "abonnes",
+						"folderPath": "raw",
+						"fileSystem": "projetedlf"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/raw_locations')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -259,6 +283,27 @@
 				"typeProperties": {
 					"schema": "stg",
 					"table": "Product"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/credential1')]",
+			"type": "Microsoft.DataFactory/factories/credentials",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "ServicePrincipal",
+				"typeProperties": {
+					"tenant": "413600cf-bd4e-4c7c-8a61-69e73cddf731",
+					"servicePrincipalId": "dev_pip",
+					"servicePrincipalKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVault1",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "dev_pip"
+					}
 				}
 			},
 			"dependsOn": []
@@ -1879,6 +1924,7 @@
 				"lastPublishTime": "2026-10-22T18:13:06Z"
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/raw_abonnee')]",
 				"[concat(variables('factoryId'), '/datasets/raw_stations')]",
 				"[concat(variables('factoryId'), '/datasets/raw_locations')]"
 			]
@@ -2010,6 +2056,15 @@
 						},
 						{
 							"name": "aggregate1"
+						},
+						{
+							"name": "window2"
+						},
+						{
+							"name": "filter2"
+						},
+						{
+							"name": "select3"
 						}
 					],
 					"scriptLines": [
@@ -2095,14 +2150,14 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select2",
 						"RawLocations derive(montant = toDouble(montant)) ~> derivedColumn4",
-						"derivedColumn4 split(!isNull(location_id) &&\r",
+						"select3 split(!isNull(location_id) &&\r",
 						"!isNull(abonne_id) &&\r",
 						"!isNull(station_depart) &&\r",
 						"!isNull(station_arrivee) &&\r",
 						"!isNull(debut) &&\r",
-						"!isNull(fin) &&\r",
-						"!isNull(montant) &&\r",
-						"!isNull(modifie_le),",
+						"isNull(modifie_le) &&\r",
+						"(isNull(fin) || fin >= debut) &&\r",
+						"(isNull(montant) || montant >= 0),",
 						"     disjoint: false) ~> split3@(LocationsDonneesValides, LocationsDonneesInvalides)",
 						"source1 derive(duree_minutes = toInteger(round((toLong(fin) - toLong(debut)) / 60000)),",
 						"          date_jour = toDate(debut)) ~> derivedColumn5",
@@ -2113,6 +2168,22 @@
 						"          duree_total_trajets = sum(duree_minutes),",
 						"          duree_total_moyennes = round(avg(duree_minutes), 2),",
 						"          montant_total = sum(montant)) ~> aggregate1",
+						"derivedColumn4 window(over(location_id),",
+						"     desc(modifie_le, true),",
+						"     row_num = rowNumber()) ~> window2",
+						"window2 filter(row_num == 1) ~> filter2",
+						"filter2 select(mapColumn(",
+						"          location_id,",
+						"          abonne_id,",
+						"          station_depart,",
+						"          station_arrivee,",
+						"          debut,",
+						"          fin,",
+						"          montant,",
+						"          modifie_le",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select3",
 						"derivedColumn2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'parquet',",
@@ -2202,6 +2273,7 @@
 				}
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/raw_abonnee')]",
 				"[concat(variables('factoryId'), '/datasets/raw_stations')]",
 				"[concat(variables('factoryId'), '/datasets/raw_locations')]",
 				"[concat(variables('factoryId'), '/datasets/stations_quanrantaine')]"
